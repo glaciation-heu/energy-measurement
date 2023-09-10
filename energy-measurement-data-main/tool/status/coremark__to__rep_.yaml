@@ -1,0 +1,322 @@
+apiVersion: cpe.cogadvisor.io/v1
+kind: Benchmark
+metadata:
+  creationTimestamp: "2023-08-02T21:30:53Z"
+  finalizers:
+  - finalizers.benchmark.cpe.cogadvisor.io
+  generation: 1
+  name: coremark
+  namespace: default
+  resourceVersion: "18798"
+  uid: e042dd70-e7d5-4d75-a250-c91677a8adae
+spec:
+  benchmarkOperator:
+    name: none
+    namespace: default
+  benchmarkSpec: |
+    parallelism: 1
+    backoffLimit: 0
+    template:
+      spec:
+        containers:
+          - name: coremark
+            image: ghcr.io/sunya-ch/coremark:ubi
+            env:
+            - name: THREADNUM
+              value: "1thread"
+            command:
+            - sh
+            - -c
+            - ./coremark-${THREADNUM}.exe
+        restartPolicy: Never
+  iterationSpec:
+    iterations:
+    - location: .template.spec.containers[0].env[name=THREADNUM].value
+      name: t
+      values:
+      - 4threads
+      - 8threads
+      - 12threads
+      - 16threads
+      - 20threads
+      - 24threads
+      - 28threads
+      - 32threads
+    - location: .parallelism
+      name: parallelism
+    sequential: true
+  parserKey: coremark
+  repetition: 5
+status:
+  hash:
+  - build: init
+    hash: "1209626772"
+    iterations:
+      parallelism: "1"
+      t: 4threads
+    run: "0"
+  - build: init
+    hash: "152377304"
+    iterations:
+      parallelism: "1"
+      t: 8threads
+    run: "0"
+  - build: init
+    hash: "816798559"
+    iterations:
+      parallelism: "1"
+      t: 12threads
+    run: "0"
+  - build: init
+    hash: "385258259"
+    iterations:
+      parallelism: "1"
+      t: 16threads
+    run: "0"
+  - build: init
+    hash: "1738835266"
+    iterations:
+      parallelism: "1"
+      t: 20threads
+    run: "0"
+  - build: init
+    hash: "3135086366"
+    iterations:
+      parallelism: "1"
+      t: 24threads
+    run: "0"
+  - build: init
+    hash: "2092864298"
+    iterations:
+      parallelism: "1"
+      t: 28threads
+    run: "0"
+  - build: init
+    hash: "2615945765"
+    iterations:
+      parallelism: "1"
+      t: 32threads
+    run: "0"
+  - build: init
+    hash: "4102661542"
+    iterations:
+      parallelism: "1"
+      t: 1thread
+    run: "0"
+  - build: init
+    hash: "1226404391"
+    iterations:
+      parallelism: "1"
+      t: 4threads
+    run: "1"
+  - build: init
+    hash: "169154923"
+    iterations:
+      parallelism: "1"
+      t: 8threads
+    run: "1"
+  - build: init
+    hash: "800020940"
+    iterations:
+      parallelism: "1"
+      t: 12threads
+    run: "1"
+  - build: init
+    hash: "368480640"
+    iterations:
+      parallelism: "1"
+      t: 16threads
+    run: "1"
+  - build: init
+    hash: "1755612885"
+    iterations:
+      parallelism: "1"
+      t: 20threads
+    run: "1"
+  - build: init
+    hash: "3151863985"
+    iterations:
+      parallelism: "1"
+      t: 24threads
+    run: "1"
+  - build: init
+    hash: "2109641917"
+    iterations:
+      parallelism: "1"
+      t: 28threads
+    run: "1"
+  - build: init
+    hash: "2599168146"
+    iterations:
+      parallelism: "1"
+      t: 32threads
+    run: "1"
+  - build: init
+    hash: "4119439161"
+    iterations:
+      parallelism: "1"
+      t: 1thread
+    run: "1"
+  - build: init
+    hash: "1243182010"
+    iterations:
+      parallelism: "1"
+      t: 4threads
+    run: "2"
+  - build: init
+    hash: "185932542"
+    iterations:
+      parallelism: "1"
+      t: 8threads
+    run: "2"
+  - build: init
+    hash: "850353797"
+    iterations:
+      parallelism: "1"
+      t: 12threads
+    run: "2"
+  - build: init
+    hash: "418813497"
+    iterations:
+      parallelism: "1"
+      t: 16threads
+    run: "2"
+  - build: init
+    hash: "1705280028"
+    iterations:
+      parallelism: "1"
+      t: 20threads
+    run: "2"
+  - build: init
+    hash: "3101531128"
+    iterations:
+      parallelism: "1"
+      t: 24threads
+    run: "2"
+  - build: init
+    hash: "2059309060"
+    iterations:
+      parallelism: "1"
+      t: 28threads
+    run: "2"
+  - build: init
+    hash: "2582390527"
+    iterations:
+      parallelism: "1"
+      t: 32threads
+    run: "2"
+  - build: init
+    hash: "4069106304"
+    iterations:
+      parallelism: "1"
+      t: 1thread
+    run: "2"
+  - build: init
+    hash: "1259959629"
+    iterations:
+      parallelism: "1"
+      t: 4threads
+    run: "3"
+  - build: init
+    hash: "202710161"
+    iterations:
+      parallelism: "1"
+      t: 8threads
+    run: "3"
+  - build: init
+    hash: "833576178"
+    iterations:
+      parallelism: "1"
+      t: 12threads
+    run: "3"
+  - build: init
+    hash: "402035878"
+    iterations:
+      parallelism: "1"
+      t: 16threads
+    run: "3"
+  - build: init
+    hash: "1722057647"
+    iterations:
+      parallelism: "1"
+      t: 20threads
+    run: "3"
+  - build: init
+    hash: "3118308747"
+    iterations:
+      parallelism: "1"
+      t: 24threads
+    run: "3"
+  - build: init
+    hash: "2076086679"
+    iterations:
+      parallelism: "1"
+      t: 28threads
+    run: "3"
+  - build: init
+    hash: "2565612908"
+    iterations:
+      parallelism: "1"
+      t: 32threads
+    run: "3"
+  - build: init
+    hash: "4085883923"
+    iterations:
+      parallelism: "1"
+      t: 1thread
+    run: "3"
+  - build: init
+    hash: "1142516296"
+    iterations:
+      parallelism: "1"
+      t: 4threads
+    run: "4"
+  - build: init
+    hash: "219487780"
+    iterations:
+      parallelism: "1"
+      t: 8threads
+    run: "4"
+  - build: init
+    hash: "749688083"
+    iterations:
+      parallelism: "1"
+      t: 12threads
+    run: "4"
+  - build: init
+    hash: "452368735"
+    iterations:
+      parallelism: "1"
+      t: 16threads
+    run: "4"
+  - build: init
+    hash: "1671724790"
+    iterations:
+      parallelism: "1"
+      t: 20threads
+    run: "4"
+  - build: init
+    hash: "3202196842"
+    iterations:
+      parallelism: "1"
+      t: 24threads
+    run: "4"
+  - build: init
+    hash: "2025753822"
+    iterations:
+      parallelism: "1"
+      t: 28threads
+    run: "4"
+  - build: init
+    hash: "2548835289"
+    iterations:
+      parallelism: "1"
+      t: 32threads
+    run: "4"
+  - build: init
+    hash: "4169772018"
+    iterations:
+      parallelism: "1"
+      t: 1thread
+    run: "4"
+  jobCompleted: 0/45
