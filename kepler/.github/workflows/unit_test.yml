@@ -1,0 +1,69 @@
+name: Unit test
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+      - 'enhancements/**'
+      - '*.md'
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'doc/**'
+      - 'enhancements/**'
+      - '*.md'
+
+permissions:
+  pull-requests: write
+  contents: write
+  repository-projects: write
+
+jobs:
+  unit_test:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+    - uses: actions/setup-go@v3
+      with:
+          go-version: 1.18
+    - name: Get ginkgo
+      run: make ginkgo-set
+      env:
+          GOPATH: /home/runner/go
+          GOBIN: /home/runner/go/bin
+    - name: install bcc
+      uses: sustainable-computing-io/kepler-action@v0.0.0
+      with:
+          runningBranch: bcc
+    - name: Run 
+      run: |
+          make test-verbose
+          go tool cover -func=coverage.out -o=coverage.out
+    - name: Go Coverage Badge  # Pass the `coverage.out` output to this action
+      uses: tj-actions/coverage-badge-go@v2
+      with:
+        filename: coverage.out
+
+    - name: Verify Changed files
+      uses: tj-actions/verify-changed-files@v11.1
+      id: verify-changed-files
+      with:
+        files: README.md
+
+    - name: Commit changes
+      if: github.event_name != 'pull_request' && steps.verify-changed-files.outputs.files_changed == 'true' 
+      run: |
+        git config --local user.email "bot@sustainable-computing.io"
+        git config --local user.name "sustainable-computing-bot"
+        git add README.md
+        git commit -m "bot: Updated coverage badge." -s
+
+    - name: Push changes
+      if: github.event_name != 'pull_request' && steps.verify-changed-files.outputs.files_changed == 'true' 
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GH_BOT_SECRET }}
+        branch: ${{ github.head_ref }}
