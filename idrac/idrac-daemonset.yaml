@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: idrac-exporter
+  labels:
+    app: idrac-exporter
+spec:
+  selector:
+    matchLabels:
+      name: idrac-exporter
+  template:
+    metadata:
+      labels:
+        name: idrac-exporter
+    spec:
+      containers:
+      - name: idrac-exporter
+        image: mrlhansen/idrac_exporter:latest
+        ports:
+        - containerPort: 9348
+        volumeMounts:
+        - name: idrac-config
+          mountPath: /etc/prometheus/idrac.yml
+          subPath: idrac-config.yaml
+      volumes:
+      - name: idrac-config
+        configMap:
+          name: idrac-config
+

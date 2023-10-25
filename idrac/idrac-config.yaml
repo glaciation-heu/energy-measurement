@@ -1,0 +1,19 @@
+address: 0.0.0.0  # Listen address
+port: 9348        # Listen port
+timeout: 10       # HTTP timeout (in seconds) for Redfish API calls
+retries: 1        # Number of retries before a target is marked as unreachable
+hosts:
+  123.45.6.78:
+    username: user
+    password: pass
+  default:
+    username: user
+    password: pass
+metrics:
+  system: true
+  sensors: true
+  power: true
+  sel: false      # iDRAC only
+  storage: false
+  memory: false
+
