@@ -114,3 +114,83 @@ ExternalRef: PACKAGE-MANAGER purl "pkg:github/helm/helm@v[insert version here]"
 ExternalRefComment: <text>Helm is available for download from the Helm GitHub repository.</text>
 IsIncludedInSPDXDoc: true
 HasBuildInfo: SPDXRef-BuildInfo-Helm
+
+##### Package Information for Grafana
+PackageName: Grafana
+PackageVersion: 9.1.5
+SPDXID: SPDXRef-Package-Grafana-9.1.5
+PackageFileName: grafana-9.1.5.linux-amd64.tar.gz
+PackageSupplier: Organization: Grafana Labs
+PackageOriginator: Organization: Grafana Labs
+PackageDownloadLocation: https://grafana.com/grafana/download/9.1.5?edition=oss
+FilesAnalyzed: false
+PackageVerificationCode: [Verification Code]
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: AGPL-3.0
+PackageLicenseInfoFromFiles: AGPL-3.0
+PackageLicenseComments: None
+PackageDescription: Grafana is an open-source platform for monitoring and observability. Grafana allows you to query, visualize, alert on, and understand your metrics no matter where they are stored.
+PackageComment: None
+
+##### Package Information for Prometheus
+PackageName: Prometheus
+PackageVersion: 2.40.0
+SPDXID: SPDXRef-Package-Prometheus-2.40.0
+PackageFileName: prometheus-2.40.0.linux-amd64.tar.gz
+PackageSupplier: Organization: Prometheus Authors
+PackageOriginator: Organization: Prometheus Authors
+PackageDownloadLocation: https://prometheus.io/download/#prometheus-2.40.0
+FilesAnalyzed: false
+PackageVerificationCode: [Verification Code]
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: Apache-2.0
+PackageLicenseInfoFromFiles: Apache-2.0
+PackageLicenseComments: None
+PackageDescription: Prometheus, an open-source systems monitoring and alerting toolkit. Version 2.40.0 includes several improvements and bug fixes.
+PackageComment: None
+
+##### Relationships
+Relationship: SPDXRef-Package-GLACIATION-PowerMeasurementFramework MONITORS SPDXRef-Package-Prometheus-2.40.0
+Relationship: SPDXRef-Package-GLACIATION-PowerMeasurementFramework VISUALIZES SPDXRef-Package-Grafana-9.1.5
+
+##### Package Information for Node Exporter
+PackageName: Node Exporter
+PackageVersion: 1.4.0
+SPDXID: SPDXRef-Package-NodeExporter-1.4.0
+PackageFileName: node_exporter-1.4.0.linux-amd64.tar.gz
+PackageSupplier: Organization: Prometheus Authors
+PackageOriginator: Organization: Prometheus Authors
+PackageDownloadLocation: https://prometheus.io/download/#node_exporter
+FilesAnalyzed: false
+PackageVerificationCode: [Verification Code]
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: Apache-2.0
+PackageLicenseInfoFromFiles: Apache-2.0
+PackageLicenseComments: None
+PackageDescription: Node Exporter, a Prometheus exporter for hardware and OS metrics exposed by *NIX kernels.
+PackageComment: None
+
+##### Package Information for Kepler
+PackageName: Kepler
+PackageVersion: 2.5.1
+SPDXID: SPDXRef-Package-Kepler-2.5.1
+PackageFileName: kepler-2.5.1.war
+PackageSupplier: Organization: Kepler Contributors
+PackageOriginator: Organization: Kepler Project
+PackageDownloadLocation: https://kepler-project.org/users/downloads
+FilesAnalyzed: false
+PackageVerificationCode: [Verification Code]
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: BSD-2-Clause
+PackageLicenseInfoFromFiles: BSD-2-Clause
+PackageLicenseComments: None
+PackageDescription: Kepler is a software application for the analysis, integration, and modeling of scientific and engineering workflows.
+PackageComment: None
+
+##### Relationships
+Relationship: SPDXRef-Package-GLACIATION-PowerMeasurementFramework UTILIZES SPDXRef-Package-Kepler-2.5.1
+Relationship: SPDXRef-Package-Prometheus-2.40.0 UTILIZES SPDXRef-Package-NodeExporter-1.4.0
+Relationship: SPDXRef-Package-Prometheus-2.40.0 UTILIZES SPDXRef-Package-cAdvisor-0.44.3
+
+##### End of Document #####
+
