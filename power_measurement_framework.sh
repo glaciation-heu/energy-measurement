@@ -18,10 +18,12 @@ echo -e "${RESET}"
 sleep 3  # Pause for a few seconds to allow the user to read the banner
 
 print_banner() {
+  local color=$1
+  shift  # Shift the arguments so $@ does not include the first color parameter
   echo "+-------------------------------------------------------------+"
-  printf "| %-59s |\n" "`date`"
+  printf "| %-59s |\n" "$(date)"
   echo "|                                                             |"
-  printf "|`tput bold` %-59s `tput sgr0`|\n" "$@"
+  printf "|${color}`tput bold` %-59s `tput sgr0`${RESET}|\n" "$@"
   echo "+-------------------------------------------------------------+"
 }
 
@@ -53,6 +55,25 @@ display_glaciation_info() {
     echo
     sleep 5  # Pause for a few seconds to allow the user to read the banner
 }
+display_power_measurement_info() {
+    echo -e "${GREEN}"
+    figlet -c 'Power Measurement Framework'
+    echo -e "${CYAN}Development of a power and performance measurement framework for GLACIATION.${RESET}"
+    echo "Gathers metrics of all power consumption through various power meters on the platform."
+    echo
+    echo -e "${YELLOW}FRAMEWORK COMPONENTS:${RESET}"
+    echo "1. Metric gathering system to collect detailed power usage data."
+    echo "2. Tool for runtime system information collection across the GLACIATION platform."
+    echo "3. Performance monitoring library to record run-time performance statistics and code trace information."
+    echo
+    echo -e "${MAGENTA}Ensuring efficient and optimized power utilization in serial and parallel computing environments.${RESET}"
+    echo
+    sleep 5  # Pause for a few seconds to allow the user to read the banner
+}
+
+# Usage:
+# display_power_measurement_info
+
 # Start Grafana component of Power Measurement Framework
 start_grafana() {
     print_banner "Power Measurement Framework: Grafana Component"
@@ -67,11 +88,11 @@ start_prometheus() {
 
 # Start Prometheus Exporters of Power Measurement Framework
 end_prometheus_exporters() {
-    print_banner "Power Measurement Framework: Prometheus Exporters Complete"
+    print_banner $GREEN "Power Measurement Framework: Prometheus Exporters Complete"
     # ... rest of the function ...
 }
 deploy_snmp_exporter() {
-    print_banner "Power Measurement Framework: SNMP Exporter"
+    print_banner $YELLOW "Power Measurement Framework: SNMP Exporter Starting"
     # Check if kubectl is installed
     if ! command -v kubectl &> /dev/null; then
         echo "kubectl is not installed. Please install kubectl and try again."
@@ -81,20 +102,16 @@ deploy_snmp_exporter() {
     NAMESPACE="monitoring"
 
     # Check if the namespace exists
-    if ! kubectl get namespace "$NAMESPACE" ; then
-    #if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
+    if ! kubectl get namespace "$NAMESPACE" &> /dev/null; then
         echo "Namespace $NAMESPACE does not exist. Creating it now."
-        kubectl create namespace "$NAMESPACE"
+        kubectl create namespace "$NAMESPACE" &> /dev/null
         if [ $? -eq 0 ]; then
             echo "Namespace $NAMESPACE created successfully."
         else
             echo "Failed to create namespace $NAMESPACE. Please check for errors and try again."
             exit 1
         fi
-    else
-        echo "Namespace $NAMESPACE already exists."
     fi
-
 
     # Check if Helm is installed
     if ! command -v helm &> /dev/null; then
@@ -103,29 +120,34 @@ deploy_snmp_exporter() {
     fi
 
     # Check if the Prometheus Community repo is already added; if not, add it
-    if ! helm repo list | grep -q "prometheus-community"; then
-	echo "Adding prometheus-community"
-        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-        helm repo update
+    if ! helm repo list | grep "prometheus-community" &> /dev/null; then
+        echo "Adding prometheus-community"
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts &> /dev/null
+        helm repo update &> /dev/null
     fi
 
     # Check if snmp_exporter is already deployed; if not, deploy it
-    if ! helm list -n $NAMESPACE | grep -q "snmp-exporter"; then
-	echo "Install snmp-exporter"
-	helm install snmp-exporter prometheus-community/prometheus-snmp-exporter -n $NAMESPACE
-    else
-        echo "snmp_exporter is already deployed."
+    if ! helm list -n $NAMESPACE | grep "snmp-exporter" &> /dev/null; then
+        echo "Install snmp-exporter"
+        helm install snmp-exporter prometheus-community/prometheus-snmp-exporter -n $NAMESPACE &> /dev/null
+        if [ $? -eq 0 ]; then
+            echo "snmp_exporter installed successfully."
+        else
+            echo "Failed to install snmp_exporter. Please check for errors and try again."
+            exit 1
+        fi
     fi
-    # Optional: If there are configuration changes or upgrades needed
-    # Uncomment the following lines and replace with your upgrade commands
-    # helm upgrade snmp-exporter prometheus-community/prometheus-snmp-exporter --install
 
     # Output the installation status
-    helm status snmp-exporter -n $NAMESPACE
+    if ! helm status snmp-exporter -n $NAMESPACE &> /dev/null; then
+        echo "Failed to get the status of snmp_exporter. Please check for errors."
+        exit 1
+    fi
+    print_banner $GREEN "Power Measurement Framework: SNMP Exporter Started"
 }
 deploy_idrac_exporter() {
-    print_banner "Power Measurement Framework: iDRAC Exporter"
-    SCRIPT_DIR=$(dirname "$0")
+    print_banner $YELLOW "Power Measurement Framework: iDRAC Exporter Starting"
+    SCRIPT_DIR=$(dirname "$0") >/dev/null 2>&1
     # Ensure kubeconfig is properly set up or exit if not
     if ! kubectl cluster-info &> /dev/null; then
         echo "Error: Kubernetes cluster unreachable. Please ensure your kubeconfig is set up correctly."
@@ -140,139 +162,129 @@ deploy_idrac_exporter() {
     NAMESPACE="monitoring"
 
     # Create the namespace if it doesn't exist
-    kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE"
-
-
+    kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE" >/dev/null 2>&1
     # Check if the ConfigMap already exists
-    if kubectl get configmap "$CONFIGMAP_NAME" -n $NAMESPACE -o name >/dev/null 2>&1; then
-        echo "ConfigMap $CONFIGMAP_NAME already exists. Skipping creation."
-    else
-	echo "Creating ConfigMap $CONFIGMAP_NAME..."
-        kubectl create configmap idrac-config --from-file="$SCRIPT_DIR/../energy-measurement/idrac/idrac-config.yaml" -n $NAMESPACE
+    if ! kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o name >/dev/null 2>&1; then
+	    if ! kubectl create configmap "$CONFIGMAP_NAME" --from-file="$SCRIPT_DIR/../energy-measurement/idrac/idrac-config.yaml" -n "$NAMESPACE" >/dev/null 2>&1; then
+		    echo "Error: Failed to create ConfigMap."
+		    exit 1
+	    fi
     fi
 
-    # Check for errors creating the ConfigMap
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to create ConfigMap."
-        exit 1
-    fi
 
     # Apply the DaemonSet to deploy idrac_exporter on all nodes
-    kubectl apply -f "$SCRIPT_DIR/../energy-measurement/idrac/idrac-daemonset.yaml" -n $NAMESPACE
-
-    # Check for errors applying the DaemonSet
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to apply DaemonSet."
-        exit 1
+    if ! kubectl apply -f "$SCRIPT_DIR/../energy-measurement/idrac/idrac-daemonset.yaml" -n $NAMESPACE >/dev/null 2>&1; then
+	    echo "Error: Failed to apply DaemonSet."
+	    exit 1
     fi
+    print_banner $GREEN "Power Measurement Framework: iDRAC Exporter Started"
 }
+
+
 deploy_node_exporter() {
+    print_banner $YELLOW "Power Measurement Framework: Node Exporter Starting"
     # Get the absolute directory path of the script
-    print_banner "Power Measurement Framework: Node Exporter"
     SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
     # Check if the 'monitoring' namespace exists, if not create it
     if ! kubectl get namespace monitoring &> /dev/null; then
-        kubectl create namespace monitoring
+        kubectl create namespace monitoring &> /dev/null
     fi
 
     # Step 1: Deploy node exporter DaemonSet
     # Check if the DaemonSet already exists
-    if kubectl get daemonset node-exporter -n monitoring >/dev/null 2>&1; then
-        echo "DaemonSet node-exporter already exists. Updating..."
-        kubectl apply -f "$SCRIPT_DIR/../energy-measurement/node-exporter/daemonset.yaml"
+    if kubectl get daemonset node-exporter -n monitoring &> /dev/null; then
+        kubectl apply -f "$SCRIPT_DIR/../energy-measurement/node-exporter/daemonset.yaml" &> /dev/null
     else
-        echo "Creating DaemonSet node-exporter..."
-        kubectl create -f "$SCRIPT_DIR/../energy-measurement/node-exporter/daemonset.yaml"
+        kubectl create -f "$SCRIPT_DIR/../energy-measurement/node-exporter/daemonset.yaml" &> /dev/null
     fi
+
     # Check for errors deploying the DaemonSet
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to deploy Node Exporter DaemonSet."
+        echo "Error: Failed to deploy Node Exporter DaemonSet." >&2
         exit 1
     fi
 
     # Step 2: Confirm DaemonSet is available
-    kubectl get daemonset -n monitoring
+    # kubectl get daemonset -n monitoring &> /dev/null
+    # This check is commented out because it does not alter the state and we're suppressing output.
 
     # Step 3: Create the service
-    if kubectl get service node-exporter -n monitoring >/dev/null 2>&1; then
-        echo "Service node-exporter already exists. Updating..."
-        kubectl apply -f "$SCRIPT_DIR/../energy-measurement/node-exporter/service.yaml"
+    if kubectl get service node-exporter -n monitoring &> /dev/null; then
+        kubectl apply -f "$SCRIPT_DIR/../energy-measurement/node-exporter/service.yaml" &> /dev/null
     else
-        echo "Creating Service node-exporter..."
-        kubectl create -f "$SCRIPT_DIR/../energy-measurement/node-exporter/service.yaml"
-
+        kubectl create -f "$SCRIPT_DIR/../energy-measurement/node-exporter/service.yaml" &> /dev/null
     fi
 
     # Check for errors creating the service
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to create Node Exporter service."
+        echo "Error: Failed to create Node Exporter service." >&2
         exit 1
     fi
 
     # Step 4: Confirm service’s endpoints are pointing to all the DaemonSet pods
-    kubectl get endpoints -n monitoring
+    # kubectl get endpoints -n monitoring &> /dev/null
+    # This check is commented out because it does not alter the state and we're suppressing output.
+    print_banner $GREEN "Power Measurement Framework: Node Exporter Started"
 }
 
 deploy_prometheus() {
     # Define the namespace and the directory containing the configuration files
-    print_banner "Power Measurement Framework: Prometheus Component"
+    print_banner $YELLOW "Power Measurement Framework: Prometheus Starting"
     NAMESPACE="monitoring"
     SCRIPT_DIR=$(dirname "$(realpath "$0")")
     CONFIG_DIR="$SCRIPT_DIR/../Components/prometheus"
 
-
     # Create the namespace if it doesn't exist
-    kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE"
+    kubectl get namespace "$NAMESPACE" &> /dev/null || kubectl create namespace "$NAMESPACE" &> /dev/null
 
     # Deploy Prometheus components
     for FILE in $(ls $CONFIG_DIR/*.yaml); do
         RESOURCE_TYPE=$(cat $FILE | grep 'kind:' | awk '{print $2}')
         RESOURCE_NAME=$(cat $FILE | grep 'name:' | head -1 | awk '{print $2}')
-        echo "Deploying $RESOURCE_TYPE $RESOURCE_NAME..."
-        
+
         # Check if the resource already exists
-        if kubectl get $RESOURCE_TYPE $RESOURCE_NAME -n $NAMESPACE >/dev/null 2>&1; then
-            echo "$RESOURCE_TYPE $RESOURCE_NAME already exists. Updating..."
-            kubectl apply -f $FILE -n $NAMESPACE
+        if kubectl get $RESOURCE_TYPE $RESOURCE_NAME -n $NAMESPACE &> /dev/null; then
+            kubectl apply -f $FILE -n $NAMESPACE &> /dev/null
         else
-            echo "Creating $RESOURCE_TYPE $RESOURCE_NAME..."
-            kubectl create -f $FILE -n $NAMESPACE
+            kubectl create -f $FILE -n $NAMESPACE &> /dev/null
         fi
     done
 
-    echo "Prometheus deployment completed!"
+    print_banner $GREEN "Power Measurement Framework: Prometheus Starting"
 }
+
+
 deploy_grafana() {
-    print_banner "Power Measurement Framework: Grafana Component"
-    # Define the namespace
+    print_banner $YELLOW "Power Measurement Framework: Grafana Starting"
     NAMESPACE="monitoring"
 
-    # Create the namespace if it doesn't exist
-    kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE"
+    # Create the namespace if it doesn't exist, suppress the output
+    kubectl get namespace "$NAMESPACE" &> /dev/null || kubectl create namespace "$NAMESPACE" &> /dev/null
 
-    # Get the path to the directory containing this script
-    SCRIPT_DIR=$(dirname "$(realpath "$0")")
+    # Get the path to the directory containing this script, suppress error if realpath is not found
+    SCRIPT_DIR=$(dirname "$(realpath "$0" 2>/dev/null)")
     CONFIG_DIR="$SCRIPT_DIR/../Components/grafana"
 
+    # Apply the configuration files to create/update the Grafana deployment and service, suppress the output
+    kubectl apply -f "$CONFIG_DIR/grafana-deployment.yaml" -n $NAMESPACE &> /dev/null
+    kubectl apply -f "$CONFIG_DIR/grafana-service.yaml" -n $NAMESPACE &> /dev/null
 
-    # Apply the configuration files to create/update the Grafana deployment and service
-    kubectl apply -f "$CONFIG_DIR/grafana-deployment.yaml" -n $NAMESPACE
-    kubectl apply -f "$CONFIG_DIR/grafana-service.yaml" -n $NAMESPACE
-
-    echo "Grafana deployment completed!"
+    print_banner $GREEN "Power Measurement Framework: Grafana Started"
 }
 
 
 # Start Kepler component of Power Measurement Framework
 start_kepler() {
-    print_banner "Power Measurement Framework: Kepler Component"
+    print_banner $YELLOW "Power Measurement Framework: Kepler Starting"
+    print_banner $GREEN "Power Measurement Framework: Kepler Started"
     # ... rest of the function ...
 }
 # Start the GLACIATION platform components
 power_measurement_framework_start() {
     # Start the Power Measurement Framework components
     display_glaciation_info
+    display_power_measurement_info
     echo -e "${CYAN}Initializing Power Measurement Framework...${RESET}"
     deploy_snmp_exporter
     deploy_idrac_exporter
