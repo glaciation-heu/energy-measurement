@@ -1,0 +1,3 @@
+[submodule "k-bench"]
+	path = k-bench
+	url = https://github.com/vmware-tanzu/k-bench.git
