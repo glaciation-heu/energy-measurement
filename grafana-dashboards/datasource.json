@@ -1,0 +1,18 @@
+{
+    "uid": "bced4410-bb2a-4f15-9e24-d8b47098f5d2",
+    "orgId": 1,
+    "name": "prometheus",
+    "type": "prometheus",
+    "typeName": "Prometheus",
+    "typeLogoUrl": "/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg",
+    "access": "proxy",
+    "url": "http://prometheus:9090/",
+    "user": "",
+    "database": "",
+    "basicAuth": false,
+    "isDefault": true,
+    "jsonData": {
+        "httpMethod": "POST"
+    },
+    "readOnly": false
+}
