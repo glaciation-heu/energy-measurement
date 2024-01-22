@@ -289,6 +289,8 @@ undeploy_grafana() {
 # Start Kepler component of Power Measurement Framework
 start_kepler() {
     print_banner $YELLOW "Power Measurement Framework: Kepler Starting"
+
+    helm repo add kepler https://sustainable-computing-io.github.io/kepler-helm-chart &> /dev/null
     
     helm install kepler kepler/kepler --namespace kepler-exporter --create-namespace &> /dev/null
 
