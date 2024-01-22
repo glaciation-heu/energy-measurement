@@ -71,26 +71,6 @@ display_power_measurement_info() {
     sleep 5  # Pause for a few seconds to allow the user to read the banner
 }
 
-# Usage:
-# display_power_measurement_info
-
-# Start Grafana component of Power Measurement Framework
-start_grafana() {
-    print_banner "Power Measurement Framework: Grafana Component"
-    # ... rest of the function ...
-}
-
-# Start Prometheus component of Power Measurement Framework
-start_prometheus() {
-    print_banner "Power Measurement Framework: Prometheus Component"
-    # ... rest of the function ...
-}
-
-# Start Prometheus Exporters of Power Measurement Framework
-end_prometheus_exporters() {
-    print_banner $GREEN "Power Measurement Framework: Prometheus Exporters Complete"
-    # ... rest of the function ...
-}
 deploy_snmp_exporter() {
     print_banner $YELLOW "Power Measurement Framework: SNMP Exporter Starting"
     # Check if kubectl is installed
@@ -145,6 +125,7 @@ deploy_snmp_exporter() {
     fi
     print_banner $GREEN "Power Measurement Framework: SNMP Exporter Started"
 }
+
 deploy_idrac_exporter() {
     print_banner $YELLOW "Power Measurement Framework: iDRAC Exporter Starting"
     SCRIPT_DIR=$(dirname "$0") >/dev/null 2>&1
@@ -233,7 +214,7 @@ deploy_prometheus() {
     print_banner $YELLOW "Power Measurement Framework: Prometheus Starting"
     NAMESPACE="monitoring"
     SCRIPT_DIR=$(dirname "$(realpath "$0")")
-    CONFIG_DIR="$SCRIPT_DIR/../Components/prometheus"
+    CONFIG_DIR="$SCRIPT_DIR/prometheus"
 
     # Create the namespace if it doesn't exist
     kubectl get namespace "$NAMESPACE" &> /dev/null || kubectl create namespace "$NAMESPACE" &> /dev/null
@@ -252,6 +233,23 @@ deploy_prometheus() {
     done
 
     print_banner $GREEN "Power Measurement Framework: Prometheus Starting"
+}
+
+undeploy_prometheus() {
+    print_banner $YELLOW "Power Measurement Framework: Prometheus Stopping"
+    NAMESPACE="monitoring"
+    SCRIPT_DIR=$(dirname "$(realpath "$0")")
+    CONFIG_DIR="$SCRIPT_DIR/prometheus"
+
+    # Deploy Prometheus components
+    for FILE in $(ls $CONFIG_DIR/*.yaml); do
+        kubectl delete -f $FILE -n $NAMESPACE &> /dev/null
+    done
+
+    # Delete the namespace if it doesn't exist
+    kubectl delete namespace "$NAMESPACE" &> /dev/null
+
+    print_banner $GREEN "Power Measurement Framework: Prometheus Stopping"
 }
 
 
@@ -273,13 +271,40 @@ deploy_grafana() {
     print_banner $GREEN "Power Measurement Framework: Grafana Started"
 }
 
+undeploy_grafana() {
+    print_banner $YELLOW "Power Measurement Framework: Grafana Stopping"
+    NAMESPACE="monitoring"
+    # Get the path to the directory containing this script, suppress error if realpath is not found
+    SCRIPT_DIR=$(dirname "$(realpath "$0" 2>/dev/null)")
+    CONFIG_DIR="$SCRIPT_DIR/../Components/grafana"
+
+    # Apply the configuration files to create/update the Grafana deployment and service, suppress the output
+    kubectl delete -f "$CONFIG_DIR/grafana-deployment.yaml" -n $NAMESPACE &> /dev/null
+    kubectl delete -f "$CONFIG_DIR/grafana-service.yaml" -n $NAMESPACE &> /dev/null
+
+    print_banner $GREEN "Power Measurement Framework: Grafana Stopped"
+
+}
 
 # Start Kepler component of Power Measurement Framework
 start_kepler() {
     print_banner $YELLOW "Power Measurement Framework: Kepler Starting"
+
+    helm repo add kepler https://sustainable-computing-io.github.io/kepler-helm-chart &> /dev/null
+    
+    helm install kepler kepler/kepler --namespace kepler-exporter --create-namespace &> /dev/null
+
     print_banner $GREEN "Power Measurement Framework: Kepler Started"
-    # ... rest of the function ...
 }
+
+stop_kepler() {
+    print_banner $YELLOW "Power Measurement Framework: Kepler Stopping"
+
+    helm delete kepler --namespace kepler-exporter &> /dev/null
+
+    print_banner $GREEN "Power Measurement Framework: Kepler Stopped"    
+}
+
 # Start the GLACIATION platform components
 power_measurement_framework_start() {
     # Start the Power Measurement Framework components
@@ -288,26 +313,23 @@ power_measurement_framework_start() {
     echo -e "${CYAN}Initializing Power Measurement Framework...${RESET}"
     deploy_snmp_exporter
     deploy_idrac_exporter
-    deploy_node_exporter
-    end_prometheus_exporters
+    deploy_node_exporter    
     deploy_prometheus
     deploy_grafana
     start_kepler
 }
+
 power_measurement_framework_stop() {
-  echo "Stopping the power measurement framework..."
-  # Add your stop commands here
+    echo "Stopping the power measurement framework..."
+    undeploy_prometheus
+    undeploy_grafana
+    stop_kepler
 }
 
 # Check for the parameter and call the relevant function
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 <start|stop>"
   exit 1
-fi
-# Check if the script is being run as root or with necessary privileges
-if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run with necessary privileges. Exiting."
-    exit 1
 fi
 
 if [ "$1" = "start" ]; then
