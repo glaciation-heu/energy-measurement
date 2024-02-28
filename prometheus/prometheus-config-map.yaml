@@ -24,6 +24,22 @@ data:
         - source_labels: [__meta_kubernetes_endpoints_name]
           regex: 'node-exporter'
           action: keep
+      - job_name: 'idrac-exporter'
+        params:
+          "target": ["10.14.2.7"]
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_endpoints_name]
+          regex: 'idrac-exporter'
+          action: keep
+      - job_name: 'snmp-exporter-prometheus-snmp-exporter'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_endpoints_name]
+          regex: 'snmp-exporter-prometheus-snmp-exporter'
+          action: keep
       - job_name: 'kepler'
         kubernetes_sd_configs:
           - role: endpoints

@@ -1,0 +1,19 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: idrac-exporter
+  namespace: monitoring
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port:   '9348'
+spec:
+  selector:
+      app.kubernetes.io/component: exporter
+      app.kubernetes.io/name: idrac-exporter
+  ports:
+  - name: idrac-exporter
+    protocol: TCP
+    port: 9348
+    targetPort: 9348
+

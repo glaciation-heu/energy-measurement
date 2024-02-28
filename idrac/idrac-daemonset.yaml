@@ -4,14 +4,20 @@ metadata:
   name: idrac-exporter
   labels:
     app: idrac-exporter
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: idrac-exporter
 spec:
   selector:
     matchLabels:
       name: idrac-exporter
+      app.kubernetes.io/component: exporter
+      app.kubernetes.io/name: idrac-exporter
   template:
     metadata:
       labels:
         name: idrac-exporter
+        app.kubernetes.io/component: exporter
+        app.kubernetes.io/name: idrac-exporter
     spec:
       containers:
       - name: idrac-exporter
